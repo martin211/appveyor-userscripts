@@ -1,7 +1,7 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name         AppVeyor powershell editor
 // @namespace    https://github.com/martin211
-// @version      1.0
+// @version      1.1
 // @description  Adds powershell editor instead standard inputs
 // @author       mail4evgeniy@gmail.com
 // @match        https://ci.appveyor.com/*
@@ -32,12 +32,7 @@ GM_addStyle(dialogCss);
     'use strict';
 
     function Init() {
-        if (window.isInitialized) {
-            return;
-        }
-
-        window.isInitialized = true;
-
+        window.iniTimerId = null;
         const divs = $('textarea');
         divs.each((i, block) => {
             const element = $(block);
@@ -102,16 +97,33 @@ GM_addStyle(dialogCss);
                 myCodeMirror.setValue(element.val());
             });
 
-            $('.vertical-tabs > li > a').click(() => {
+            /*$('.vertical-tabs > li > a').click(() => {
                 window.isInitialized = null;
                 setTimeout(() => {
                     Init();
-                }, 2500);
-            });
+                }, 1500);
+            });*/
         });
     }
 
-    setTimeout(() => {
-        Init();
-    }, 2500);
+    function addXMLRequestCallback(callback){
+        var origOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function() {
+            this.addEventListener('load', function() {
+                if (window.iniTimerId) {
+                    clearTimeout(window.iniTimerId);
+                }
+
+                window.iniTimerId = setTimeout(() => {
+                    Init();
+                }, 500);
+            });
+            origOpen.apply(this, arguments);
+        };
+    }
+
+    addXMLRequestCallback( function( xhr ) { 
+    });
+    addXMLRequestCallback( function( xhr ) {
+    });
 })();
